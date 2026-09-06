@@ -5,8 +5,13 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.example.rogebox.RogeBoxGame;
+import com.example.rogebox.obstacle.Spike;
 import com.example.rogebox.player.Player;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class GameScreen implements Screen {
 
@@ -22,7 +27,7 @@ public class GameScreen implements Screen {
 
     private float backgroundX = 0f;
 
-    private float backgroundSpeed = 150f;
+    private float backgroundSpeed = 350f;
 
 
     // =========================
@@ -30,6 +35,14 @@ public class GameScreen implements Screen {
     // =========================
 
     private Player player;
+
+    // =========================
+    // OBSTACLES
+    // =========================
+
+    private ArrayList<Spike> spikes;
+    private float spikeSpawnTimer;
+    private float nextSpikeSpawnTime;
 
 
     public GameScreen(RogeBoxGame game) {
@@ -57,6 +70,10 @@ public class GameScreen implements Screen {
             150f,
             groundY
         );
+
+        spikes = new ArrayList<>();
+        spikeSpawnTimer = 0f;
+        nextSpikeSpawnTime = MathUtils.random(1.5f, 3.5f);
     }
 
 
@@ -90,8 +107,9 @@ public class GameScreen implements Screen {
         // BACKGROUND
         // =========================
 
-        backgroundX -=
-            backgroundSpeed * delta;
+        if (!player.isDead()) {
+            backgroundX -= backgroundSpeed * delta;
+        }
 
 
         float backgroundHeight =
@@ -126,6 +144,46 @@ public class GameScreen implements Screen {
             delta,
             groundY
         );
+
+        if (player.isDeathAnimationFinished()) {
+            game.setScreen(new GameOverScreen(game));
+            return;
+        }
+
+        // =========================
+        // OBSTACLES UPDATE
+        // =========================
+
+        if (!player.isDead()) {
+            spikeSpawnTimer += delta;
+            if (spikeSpawnTimer >= nextSpikeSpawnTime) {
+                float startX = screenWidth + 100f;
+                spikes.add(new Spike(startX, groundY));
+                spikeSpawnTimer = 0f;
+                // Random interval for the next spike
+                nextSpikeSpawnTime = MathUtils.random(1.5f, 4.0f);
+            }
+        }
+
+        Iterator<Spike> iter = spikes.iterator();
+        while (iter.hasNext()) {
+            Spike spike = iter.next();
+
+            if (!player.isDead()) {
+                spike.update(delta, backgroundSpeed);
+            }
+
+            // Check collision
+            if (!player.isDead() && spike.getBounds().overlaps(player.getBounds())) {
+                player.die();
+            }
+
+            // Remove if out of screen
+            if (spike.getX() + spike.getWidth() < 0) {
+                spike.dispose();
+                iter.remove();
+            }
+        }
 
 
         // =========================
@@ -168,6 +226,11 @@ public class GameScreen implements Screen {
         // Player
         player.render(batch);
 
+        // Spikes
+        for (Spike spike : spikes) {
+            spike.render(batch);
+        }
+
 
         batch.end();
     }
@@ -204,5 +267,9 @@ public class GameScreen implements Screen {
         background.dispose();
 
         player.dispose();
+
+        for (Spike spike : spikes) {
+            spike.dispose();
+        }
     }
 }

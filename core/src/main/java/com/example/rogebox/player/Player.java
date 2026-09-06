@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 
 public class Player {
 
@@ -20,8 +21,8 @@ public class Player {
     // PLAYER SIZE
     // =========================
 
-    private static final float WIDTH = 300f;
-    private static final float HEIGHT = 300f;
+    private static final float WIDTH = 450f;
+    private static final float HEIGHT = 450f;
 
 
     // =========================
@@ -31,7 +32,7 @@ public class Player {
     private float x;
     private float y;
 
-    private float speed = 300f;
+    private float speed = 500f;
 
 
     // =========================
@@ -42,7 +43,7 @@ public class Player {
 
     private float gravity = -1800f;
 
-    private float jumpForce = 750f;
+    private float jumpForce = 1050f;
 
     private boolean onGround = true;
 
@@ -310,21 +311,31 @@ public class Player {
             getCurrentFrame();
 
         float drawX = x;
-        // Hạ toàn bộ hình ảnh nhân vật (cả chạy và nhảy) xuống 20 pixel để sát đất hơn
-        float drawY = y - 100f;
+        // Adjust for the 1.5x larger size
+        float drawY = y - 150f;
         float drawWidth = WIDTH;
         float drawHeight = HEIGHT;
 
-        if (jumping) {
-            // Giảm kích thước jump xuống thêm một chút
-            drawWidth = 210f;
-            drawHeight = 210f;
-
-            // Căn giữa nhân vật theo chiều ngang (300 - 210) / 2 = 45
-            drawX = x + 45f;
+        if (dead) {
+            // Die sprite is too large visually, scale it down slightly
+            drawWidth = 250f;
+            drawHeight = 250f;
             
-            // Bù lại phần hụt ở dưới chân do ảnh bị thu nhỏ lại (nâng nhân vật lên)
-            drawY += 50f;
+            // Center horizontally (450 - 250) / 2 = 100
+            drawX = x + 100f;
+            
+            // Offset vertically to compensate for smaller size
+            drawY += 100f;
+        } else if (jumping) {
+            // Jump size scaled up by 1.5x (from 210 to 315)
+            drawWidth = 315f;
+            drawHeight = 315f;
+
+            // Center horizontally (450 - 315) / 2 = 67.5
+            drawX = x + 67.5f;
+            
+            // Offset vertically for jump scaled up by 1.5x (from 50 to 75)
+            drawY += 75f;
         }
 
         batch.draw(
@@ -357,6 +368,38 @@ public class Player {
         return HEIGHT;
     }
 
+    public void die() {
+        if (!dead) {
+            dead = true;
+            stateTime = 0f;
+        }
+    }
+    
+    public boolean isDead() {
+        return dead;
+    }
+    
+    public boolean isDeathAnimationFinished() {
+        return dead && dieAnimation.isAnimationFinished(stateTime);
+    }
+
+    public Rectangle getBounds() {
+        float drawX = x;
+        float drawY = y - 150f;
+        
+        if (jumping) {
+            float drawWidth = 315f;
+            float drawHeight = 315f;
+            drawX = x + 67.5f;
+            drawY += 75f;
+            
+            // Tight bounds for jumping character (narrower width)
+            return new Rectangle(drawX + 110f, drawY + 20f, drawWidth - 220f, drawHeight - 80f);
+        }
+        
+        // Tight bounds for running character (cutting out lots of transparent space on the sides)
+        return new Rectangle(drawX + 160f, drawY, WIDTH - 320f, HEIGHT - 150f);
+    }
 
     // =========================================================
     // DISPOSE
