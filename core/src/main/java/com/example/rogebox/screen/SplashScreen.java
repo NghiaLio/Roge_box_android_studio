@@ -14,8 +14,11 @@ public class SplashScreen implements Screen {
     private final RogeBoxGame game;
 
     private SpriteBatch batch;
-    private Texture introImage;
+    private Texture background;
+    private Texture plane;
     private ShapeRenderer shapeRenderer;
+
+    private float backgroundY = 0f;
 
     private float elapsedTime = 0f;
     private float loadingProgress = 0f;
@@ -30,8 +33,9 @@ public class SplashScreen implements Screen {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
 
-        // Load ảnh trong thư mục assets
-        introImage = new Texture("initialScreen.png");
+        // Sử dụng nền và phi thuyền làm Splash screen
+        background = new Texture("background3.png");
+        plane = new Texture("shipMain.png");
     }
 
     @Override
@@ -51,27 +55,38 @@ public class SplashScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // =========================
-        // VẼ ẢNH INTRO
+        // CẬP NHẬT VÀ VẼ NỀN CUỘN
         // =========================
+        
+        float screenWidth = Gdx.graphics.getWidth();
+        float screenHeight = Gdx.graphics.getHeight();
+        
+        backgroundY -= 100f * delta;
+        float backgroundRenderHeight = background.getHeight() * screenWidth / background.getWidth();
+
+        if (backgroundY <= -backgroundRenderHeight) {
+            backgroundY += backgroundRenderHeight;
+        }
 
         batch.begin();
 
-        batch.draw(
-            introImage,
-            0,
-            0,
-            Gdx.graphics.getWidth(),
-            Gdx.graphics.getHeight()
-        );
+        batch.draw(background, 0, backgroundY, screenWidth, backgroundRenderHeight);
+        batch.draw(background, 0, backgroundY + backgroundRenderHeight, screenWidth, backgroundRenderHeight);
+
+        // Vẽ phi thuyền ở giữa
+        float planeWidth = 200f;
+        float planeHeight = 200f;
+        float planeX = (screenWidth - planeWidth) / 2f;
+        // Phi thuyền bay lên dần
+        float planeY = (screenHeight / 2f) - 100f + (loadingProgress * 200f);
+        
+        batch.draw(plane, planeX, planeY, planeWidth, planeHeight);
 
         batch.end();
 
         // =========================
         // VẼ LOADING BAR
         // =========================
-
-        float screenWidth = Gdx.graphics.getWidth();
-        float screenHeight = Gdx.graphics.getHeight();
 
         float barWidth = screenWidth * 0.5f;
         float barHeight = 25f;
@@ -133,9 +148,9 @@ public class SplashScreen implements Screen {
 
     @Override
     public void dispose() {
-
         batch.dispose();
-        introImage.dispose();
+        background.dispose();
+        plane.dispose();
         shapeRenderer.dispose();
     }
 }

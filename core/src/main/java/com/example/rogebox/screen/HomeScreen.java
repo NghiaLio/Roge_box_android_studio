@@ -38,10 +38,7 @@ public class HomeScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
 
         // Load ảnh nền
-        background = new Texture("home.png");
-        Image bgImage = new Image(background);
-        bgImage.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        stage.addActor(bgImage);
+        background = new Texture("background3.png");
 
         // Tạo Skin programmatically cho các nút bấm (không cần file json)
         createSkin();
@@ -52,8 +49,8 @@ public class HomeScreen implements Screen {
         stage.addActor(table);
 
         // Tiêu đề game
-        Label.LabelStyle labelStyle = new Label.LabelStyle(skin.getFont("title"), Color.WHITE);
-        Label titleLabel = new Label("ROGE_BOX", labelStyle);
+        Label.LabelStyle labelStyle = new Label.LabelStyle(skin.getFont("title"), Color.CYAN);
+        Label titleLabel = new Label("SPACE SHOOTER", labelStyle);
 
         // Các nút bấm
         TextButton playButton = new TextButton("PLAY", skin);
@@ -113,10 +110,28 @@ public class HomeScreen implements Screen {
         return new TextureRegionDrawable(new TextureRegion(texture));
     }
 
+    private float backgroundY = 0f;
+
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // Cuộn nền
+        float screenWidth = Gdx.graphics.getWidth();
+        float screenHeight = Gdx.graphics.getHeight();
+        backgroundY -= 50f * delta;
+        float backgroundRenderHeight = background.getHeight() * screenWidth / background.getWidth();
+
+        if (backgroundY <= -backgroundRenderHeight) {
+            backgroundY += backgroundRenderHeight;
+        }
+
+        // Vẽ nền bằng batch của stage
+        stage.getBatch().begin();
+        stage.getBatch().draw(background, 0, backgroundY, screenWidth, backgroundRenderHeight);
+        stage.getBatch().draw(background, 0, backgroundY + backgroundRenderHeight, screenWidth, backgroundRenderHeight);
+        stage.getBatch().end();
 
         // Cập nhật và vẽ Scene2D Stage
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
@@ -126,11 +141,6 @@ public class HomeScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
-        
-        // Cập nhật lại kích thước ảnh nền khi thay đổi cửa sổ
-        if (stage.getActors().size > 0 && stage.getActors().get(0) instanceof Image) {
-            stage.getActors().get(0).setSize(width, height);
-        }
     }
 
     @Override
