@@ -9,15 +9,12 @@ public class Enemy {
 
     private float x;
     private float y;
-    
+
     // Kích thước nhỏ hơn Player
     private float width = 80f;
     private float height = 80f;
 
-    // Vận tốc ngẫu nhiên theo 2 trục
-    private float vx;
-    private float vy;
-
+    // Vận tốc (không còn dùng vx, vy cho di chuyển ngẫu nhiên)
     private float screenWidth;
     private float screenHeight;
 
@@ -35,74 +32,24 @@ public class Enemy {
     public void update(float delta, float speed) {
         if (!active) return;
 
-        // Di chuyển linh hoạt theo 4 hướng
-        x += vx * speed * delta;
-        y += vy * speed * delta;
+        // Chỉ di chuyển từ trên xuống dưới
+        y -= speed * delta;
 
-        // Xử lý chạm biên (wrap-around)
-        // Chạm biên trái -> Xuất hiện biên phải
-        if (x + width < 0) {
-            x = screenWidth;
-            y = MathUtils.random(0, screenHeight - height);
-            randomizeVelocity();
-        }
-        // Chạm biên phải -> Xuất hiện biên trái
-        else if (x > screenWidth) {
-            x = -width;
-            y = MathUtils.random(0, screenHeight - height);
-            randomizeVelocity();
-        }
-
-        // Chạm đáy -> Xuất hiện đỉnh
+        // Nếu đi quá đáy màn hình (bay khỏi màn hình), quay lại đỉnh ở một vị trí X ngẫu nhiên
         if (y + height < 0) {
-            y = screenHeight;
-            x = MathUtils.random(0, screenWidth - width);
-            randomizeVelocity();
-        }
-        // Chạm đỉnh (biên trên) -> Xuất hiện đáy (biên dưới)
-        else if (y > screenHeight) {
-            y = -height;
-            x = MathUtils.random(0, screenWidth - width);
-            randomizeVelocity();
+            resetToTop();
         }
     }
 
-    private void randomizeVelocity() {
-        // Sinh hướng ngẫu nhiên (tránh việc đứng yên)
-        do {
-            vx = MathUtils.random(-1f, 1f);
-            vy = MathUtils.random(-1f, 1f);
-        } while (Math.abs(vx) < 0.2f && Math.abs(vy) < 0.2f);
-        
-        // Chuẩn hóa vector để tốc độ luôn đều
-        float length = (float) Math.sqrt(vx * vx + vy * vy);
-        vx /= length;
-        vy /= length;
+    private void resetToTop() {
+        this.y = screenHeight;
+        this.x = MathUtils.random(0, screenWidth - width);
+        this.active = true;
     }
 
     private void resetPosition() {
-        // Xuất hiện ngẫu nhiên ở một trong 4 biên
-        int edge = MathUtils.random(0, 3);
-        switch(edge) {
-            case 0: // Top
-                this.y = screenHeight;
-                this.x = MathUtils.random(0, screenWidth - width);
-                break;
-            case 1: // Bottom
-                this.y = -height;
-                this.x = MathUtils.random(0, screenWidth - width);
-                break;
-            case 2: // Left
-                this.x = -width;
-                this.y = MathUtils.random(0, screenHeight - height);
-                break;
-            case 3: // Right
-                this.x = screenWidth;
-                this.y = MathUtils.random(0, screenHeight - height);
-                break;
-        }
-        randomizeVelocity();
-        this.active = true;
+        // Luôn xuất hiện ở đỉnh màn hình khi khởi tạo hoặc reset
+        resetToTop();
     }
 
     public void render(SpriteBatch batch) {
