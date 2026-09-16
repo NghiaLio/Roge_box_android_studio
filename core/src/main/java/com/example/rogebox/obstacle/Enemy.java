@@ -24,12 +24,9 @@ public class Enemy {
 
     private Texture texture;
     private boolean active;
-    
+
     // Stun state (Defense 2)
     private float stunTimer = 0f;
-
-    // Track if enemy has already entered restricted zone (to handle warning count cleanly)
-    private boolean hasEnteredRestrictedZone = false;
 
     public Enemy(float screenWidth, float screenHeight) {
         this.screenWidth = screenWidth;
@@ -62,7 +59,6 @@ public class Enemy {
         this.x = MathUtils.random(0, screenWidth - width);
         this.active = true;
         this.stunTimer = 0f;
-        this.hasEnteredRestrictedZone = false;
     }
 
     private void resetPosition() {
@@ -109,14 +105,6 @@ public class Enemy {
     public float getY() { return y; }
     public float getWidth() { return width; }
     public float getHeight() { return height; }
-
-    public boolean hasEnteredRestrictedZone() {
-        return hasEnteredRestrictedZone;
-    }
-
-    public void setHasEnteredRestrictedZone(boolean entered) {
-        this.hasEnteredRestrictedZone = entered;
-    }
 
     public void dispose() {
         if (texture != null) {

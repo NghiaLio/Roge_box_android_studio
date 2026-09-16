@@ -21,11 +21,10 @@ public class Player {
     private Texture shieldTexture;
     private boolean dead = false;
 
-    // Attributes & HUD stats
+    // Attributes & HUD stats (3 core stats: Health, Energy, Coins/Score)
     private int health = 100;
-    private int armor = 50;
-    private int gold = 0;
-    private int diamonds = 0;
+    private int energy = 100; // Năng lượng khởi đầu
+    private int coins = 0;    // Coin (Score)
 
     // Defense 1: Energy Shield & Cooldown
     private boolean shieldActive = false;
@@ -131,7 +130,8 @@ public class Player {
 
         // Render Shield Barrier aura if Defense 1 is active
         if (shieldActive) {
-            batch.draw(shieldTexture, x - 25f, y - 25f, WIDTH + 50f, HEIGHT + 50f);
+            // Tăng vùng giáp bao quanh (từ +50 lên +80)
+            batch.draw(shieldTexture, x - 40f, y - 40f, WIDTH + 80f, HEIGHT + 80f);
         }
     }
 
@@ -183,14 +183,7 @@ public class Player {
         if (shieldActive) return; // Shield absorbs all damage
 
         hitFlashTimer = HIT_FLASH_DURATION;
-
-        if (armor > 0) {
-            armor -= amount / 2;
-            health -= Math.max(1, amount / 2);
-            if (armor < 0) armor = 0;
-        } else {
-            health -= amount;
-        }
+        health -= amount;
 
         if (health <= 0) {
             health = 0;
@@ -198,14 +191,17 @@ public class Player {
         }
     }
 
-    public int getArmor() { return armor; }
-    public void addArmor(int amount) { armor = Math.min(100, armor + amount); }
+    public int getCoins() { return coins; }
+    public void addCoins(int amount) { coins += amount; }
 
-    public int getGold() { return gold; }
-    public void addGold(int amount) { gold += amount; }
+    // Backward compatibility for gold
+    public int getGold() { return coins; }
+    public void addGold(int amount) { coins += amount; }
 
-    public int getDiamonds() { return diamonds; }
-    public void addDiamonds(int amount) { diamonds += amount; }
+    public int getEnergy() { return energy; }
+    public void addEnergy(int amount) { energy = Math.min(100, energy + amount); }
+    public void useEnergy(int amount) { energy = Math.max(0, energy - amount); }
+    public boolean hasEnergy(int amount) { return energy >= amount; }
 
     public Rectangle getBounds() {
         return new Rectangle(x + 15f, y + 15f, WIDTH - 30f, HEIGHT - 30f);
@@ -224,6 +220,7 @@ public class Player {
     public float getWidth() { return WIDTH; }
     public float getHeight() { return HEIGHT; }
     public float getCenterX() { return x + WIDTH / 2f; }
+    public float getCenterY() { return y + HEIGHT / 2f; }
     public float getTopY() { return y + HEIGHT; }
 
     public void dispose() {

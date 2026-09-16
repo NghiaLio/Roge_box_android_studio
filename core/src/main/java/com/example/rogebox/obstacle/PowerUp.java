@@ -6,16 +6,20 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 
 /**
- * Object Z: PowerUp / Reward Chest / Item Box
- * Uses dedicated PNG textures: item_gold.png, item_health.png, item_speed.png, item_weapon.png
+ * Object Z: PowerUp / Drop Items
+ * Uses dedicated PNG textures:
+ * - item_health.png: Hồi HP
+ * - item_speed.png: Hồi Energy
+ * - item_gold.png: Nhặt Coin (Score)
+ * - item_weapon.png: Kích hoạt khiên bảo vệ
  */
 public class PowerUp {
 
     public enum Type {
-        GOLD_DIAMOND,
-        SPEED_BOOST,
-        HEALTH_ARMOR,
-        WEAPON_AMMO
+        HEALTH,        // Hồi 20 HP
+        ENERGY,        // Hồi 25 Energy
+        COIN,          // Nhận 20 Coin/Score
+        SHIELD_BOOST   // Kích hoạt khiên hộ mệnh
     }
 
     private float x;
@@ -30,8 +34,8 @@ public class PowerUp {
     private Type type;
     private Texture goldTex;
     private Texture healthTex;
-    private Texture speedTex;
-    private Texture weaponTex;
+    private Texture energyTex;
+    private Texture shieldTex;
 
     private boolean active;
 
@@ -41,8 +45,8 @@ public class PowerUp {
 
         this.goldTex = new Texture("item_gold.png");
         this.healthTex = new Texture("item_health.png");
-        this.speedTex = new Texture("item_speed.png");
-        this.weaponTex = new Texture("item_weapon.png");
+        this.energyTex = new Texture("item_speed.png"); // Biểu tượng tia năng lượng
+        this.shieldTex = new Texture("item_weapon.png"); // Khiên phòng vệ
 
         this.active = true;
         resetToTop();
@@ -70,10 +74,18 @@ public class PowerUp {
 
         Texture currentTex = goldTex;
         switch (type) {
-            case GOLD_DIAMOND: currentTex = goldTex; break;
-            case SPEED_BOOST:  currentTex = speedTex; break;
-            case HEALTH_ARMOR: currentTex = healthTex; break;
-            case WEAPON_AMMO:  currentTex = weaponTex; break;
+            case HEALTH:
+                currentTex = healthTex;
+                break;
+            case ENERGY:
+                currentTex = energyTex;
+                break;
+            case COIN:
+                currentTex = goldTex;
+                break;
+            case SHIELD_BOOST:
+                currentTex = shieldTex;
+                break;
         }
 
         if (currentTex != null) {
@@ -103,7 +115,7 @@ public class PowerUp {
     public void dispose() {
         if (goldTex != null) goldTex.dispose();
         if (healthTex != null) healthTex.dispose();
-        if (speedTex != null) speedTex.dispose();
-        if (weaponTex != null) weaponTex.dispose();
+        if (energyTex != null) energyTex.dispose();
+        if (shieldTex != null) shieldTex.dispose();
     }
 }

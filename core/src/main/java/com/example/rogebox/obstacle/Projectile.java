@@ -40,8 +40,8 @@ public class Projectile {
             this.vx = 0f;
             this.vy = speed;
         } else if (type == Type.MISSILE) {
-            this.width = 60f;
-            this.height = 100f;
+            this.width = 180f;  // Gấp 3 lần (60 * 3)
+            this.height = 300f; // Gấp 3 lần (100 * 3)
             this.speed = 900f;
             this.vx = 0f;
             this.vy = speed;

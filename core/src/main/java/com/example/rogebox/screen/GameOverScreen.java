@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -22,11 +23,18 @@ import com.example.rogebox.RogeBoxGame;
 public class GameOverScreen implements Screen {
 
     private final RogeBoxGame game;
+    private final int finalScore;
     private Stage stage;
     private Skin skin;
+    private Texture restartTex;
 
     public GameOverScreen(RogeBoxGame game) {
+        this(game, 0);
+    }
+
+    public GameOverScreen(RogeBoxGame game, int finalScore) {
         this.game = game;
+        this.finalScore = finalScore;
     }
 
     @Override
@@ -43,10 +51,17 @@ public class GameOverScreen implements Screen {
         Label.LabelStyle labelStyle = new Label.LabelStyle(skin.getFont("title"), Color.RED);
         Label titleLabel = new Label("GAME OVER", labelStyle);
 
-        TextButton playAgainButton = new TextButton("PLAY AGAIN", skin);
+        Label.LabelStyle scoreStyle = new Label.LabelStyle(skin.getFont("default"), Color.GOLD);
+        Label scoreLabel = new Label("COINS / SCORE: " + finalScore, scoreStyle);
+
+        restartTex = new Texture("restart.png");
+        ImageButton.ImageButtonStyle restartStyle = new ImageButton.ImageButtonStyle();
+        restartStyle.up = new TextureRegionDrawable(new TextureRegion(restartTex));
+        ImageButton restartButton = new ImageButton(restartStyle);
+
         TextButton menuButton = new TextButton("MAIN MENU", skin);
 
-        playAgainButton.addListener(new ChangeListener() {
+        restartButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 game.setScreen(new GameScreen(game));
@@ -60,8 +75,9 @@ public class GameOverScreen implements Screen {
             }
         });
 
-        table.add(titleLabel).padBottom(80).row();
-        table.add(playAgainButton).size(300, 80).padBottom(30).row();
+        table.add(titleLabel).padBottom(20).row();
+        table.add(scoreLabel).padBottom(50).row();
+        table.add(restartButton).size(128, 128).padBottom(30).row();
         table.add(menuButton).size(300, 80);
     }
 
@@ -71,7 +87,7 @@ public class GameOverScreen implements Screen {
         BitmapFont font = new BitmapFont();
         font.getData().setScale(2f);
         skin.add("default", font);
-        
+
         BitmapFont titleFont = new BitmapFont();
         titleFont.getData().setScale(3f);
         skin.add("title", titleFont);
@@ -83,7 +99,7 @@ public class GameOverScreen implements Screen {
         textButtonStyle.font = skin.getFont("default");
         textButtonStyle.fontColor = Color.WHITE;
         textButtonStyle.downFontColor = Color.LIGHT_GRAY;
-        
+
         skin.add("default", textButtonStyle);
     }
 
@@ -123,5 +139,6 @@ public class GameOverScreen implements Screen {
     public void dispose() {
         if (stage != null) stage.dispose();
         if (skin != null) skin.dispose();
+        if (restartTex != null) restartTex.dispose();
     }
 }
