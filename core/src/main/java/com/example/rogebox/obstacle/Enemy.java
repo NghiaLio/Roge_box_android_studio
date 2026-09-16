@@ -1,25 +1,35 @@
 package com.example.rogebox.obstacle;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 
+/**
+ * Object X: Enemy / Monster / Creep (NPC B)
+ * Moves downward toward restricted area at bottom of screen.
+ * Can be stunned by Player's Defense 2 skill (Stun Pulse).
+ */
 public class Enemy {
 
     private float x;
     private float y;
 
-    // Kích thước nhỏ hơn Player
     private float width = 80f;
     private float height = 80f;
 
-    // Vận tốc (không còn dùng vx, vy cho di chuyển ngẫu nhiên)
     private float screenWidth;
     private float screenHeight;
 
     private Texture texture;
     private boolean active;
+    
+    // Stun state (Defense 2)
+    private float stunTimer = 0f;
+
+    // Track if enemy has already entered restricted zone (to handle warning count cleanly)
+    private boolean hasEnteredRestrictedZone = false;
 
     public Enemy(float screenWidth, float screenHeight) {
         this.screenWidth = screenWidth;
@@ -32,30 +42,52 @@ public class Enemy {
     public void update(float delta, float speed) {
         if (!active) return;
 
-        // Chỉ di chuyển từ trên xuống dưới
+        // If stunned by Defense 2 skill, pause movement
+        if (stunTimer > 0) {
+            stunTimer -= delta;
+            return;
+        }
+
+        // Move downward
         y -= speed * delta;
 
-        // Nếu đi quá đáy màn hình (bay khỏi màn hình), quay lại đỉnh ở một vị trí X ngẫu nhiên
+        // Reset if off bottom of screen
         if (y + height < 0) {
             resetToTop();
         }
     }
 
-    private void resetToTop() {
-        this.y = screenHeight;
+    public void resetToTop() {
+        this.y = screenHeight + MathUtils.random(10, 200);
         this.x = MathUtils.random(0, screenWidth - width);
         this.active = true;
+        this.stunTimer = 0f;
+        this.hasEnteredRestrictedZone = false;
     }
 
     private void resetPosition() {
-        // Luôn xuất hiện ở đỉnh màn hình khi khởi tạo hoặc reset
         resetToTop();
     }
 
     public void render(SpriteBatch batch) {
         if (active) {
+            if (stunTimer > 0) {
+                // Cyan flash tint when stunned
+                batch.setColor(0.3f, 0.8f, 1.0f, 1.0f);
+            }
             batch.draw(texture, x, y, width, height);
+            if (stunTimer > 0) {
+                batch.setColor(Color.WHITE);
+            }
         }
+    }
+
+    public void stun(float duration) {
+        this.stunTimer = duration;
+    }
+
+    public boolean isStunned() {
+        return stunTimer > 0;
     }
 
     public Rectangle getBounds() {
@@ -71,6 +103,19 @@ public class Enemy {
         if (active) {
             resetPosition();
         }
+    }
+
+    public float getX() { return x; }
+    public float getY() { return y; }
+    public float getWidth() { return width; }
+    public float getHeight() { return height; }
+
+    public boolean hasEnteredRestrictedZone() {
+        return hasEnteredRestrictedZone;
+    }
+
+    public void setHasEnteredRestrictedZone(boolean entered) {
+        this.hasEnteredRestrictedZone = entered;
     }
 
     public void dispose() {
